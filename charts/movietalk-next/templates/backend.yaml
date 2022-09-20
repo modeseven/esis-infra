@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movie-api
+  labels:
+    app: movie-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: movie-api
+  template:
+    metadata:
+      labels:
+        app: movie-api
+    spec:
+      initContainers:
+        - name: wait-for-mongo-service
+          image: busybox:latest
+          command: ['sh', '-c',
+            'until nc -vz mongo 27017; do echo "Waiting for mongo service"; sleep 2; done;']
+        - name: wait-for-keycloak-service
+          image: busybox:latest
+          command: ['sh', '-c',
+            'until nc -vz keycloak 80; do echo "Waiting for keycloak service"; sleep 2; done;']
+      containers:
+        - name: movie-api
+          image: modeseven/movietalk-api:{{ .Values.apiImageTag }}
+          readinessProbe:
+            httpGet:
+              path: /movies-api/actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 8
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /movies-api/actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 8
+            failureThreshold: 2
+          ports:
+            - containerPort: 8080
+          env:
+          - name: MONGODB_HOST
+            value: {{ .Values.mongoHost }}
+          - name: MONGODB_PORT
+            value: {{ quote .Values.mongoPort }}
+          - name: KEYCLOAK_HOST
+            value: {{ .Values.tlsEnabled | ternary "https" "http" }}://{{ .Values.hostName }}
+          - name: SERVER_SERVLET_CONTEXT-PATH
+            value: "/movies-api"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: movie-api
+spec:
+  selector:
+    app: movie-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

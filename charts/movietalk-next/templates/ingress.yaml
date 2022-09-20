@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-server-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+{{- if eq .Values.tlsEnabled true }}
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/enable-cors: 'true'
+{{ end }}
+spec:
+{{- if eq .Values.tlsEnabled true }}
+  tls:
+  - hosts:
+      - {{ .Values.hostName }}
+    secretName: demoapp-secret
+{{ end }}
+  rules:
+  - host: {{ .Values.hostName }}
+    http:
+      paths:
+      - pathType: Prefix
+        path: /movies-api
+        backend:
+            service: 
+                name: "movie-api"
+                port:
+                   number: 8080
+      - pathType: Prefix
+        path: /
+        backend:
+            service: 
+                name: "movietalk-ui"
+                port:
+                  number: 80
+      - pathType: Prefix
+        path: /auth
+        backend:
+            service: 
+                name: "keycloak"
+                port:
+                  number: 80
+
+            

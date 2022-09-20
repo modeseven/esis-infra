@@ -1,0 +1,6 @@
+# env config
+env: perf
+hostName: movietalk-next.perf.mbegley.net
+# Images
+uiImageTag: 1.1.2
+apiImageTag: v0.0.3

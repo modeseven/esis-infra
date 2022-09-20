@@ -1,0 +1,92 @@
+## https://www.cloudytuts.com/guides/kubernetes/how-to-deploy-mongodb-on-kubernetes/
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+spec:
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  serviceName: mongodb-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: {{ .Values.mongoImage }}
+        ports:
+          - containerPort: 27017
+        livenessProbe:
+          exec:
+            command:
+            -  echo
+            - -e
+            - "--eval \"db.adminCommand('ping')\""
+            -  \|
+            -  xargs
+            -  mongo
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            -  echo
+            - -e
+            - "--eval \"db.adminCommand('ping')\""
+            -  \|
+            -  xargs
+            -  mongo
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+{{- if eq .Values.persistence.enabled true }}
+        volumeMounts:
+        - name: mongodb-persistent-storage
+          mountPath: /data/db
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb-persistent-storage
+      annotations:
+        volume.beta.kubernetes.io/storage-class: "local"
+    spec:
+      volumeName: "mongo-next-{{ .Values.env }}"
+      storageClassName: "local"
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "mongo-next-{{ .Values.env }}"
+  labels:
+    type: "local"
+spec:
+  storageClassName: "local"
+  capacity:
+    storage: "1Gi"
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/{{ .Values.rootVolumeFolder }}/{{ .Release.Name }}-{{ .Values.env }}/mongo-next-{{ .Values.env }}"
+{{ end }}

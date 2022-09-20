@@ -1,0 +1,6 @@
+# env config
+env: prod
+hostName: movietalk.mbegley.net
+# Images
+uiImageTag: 1.1.5
+apiImageTag: 1.0.0

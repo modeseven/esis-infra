@@ -1,0 +1,6 @@
+# env config
+env: stage
+hostName: movietalk.stage.mbegley.net
+# Images
+uiImageTag: 1.2.0
+apiImageTag: 1.0.0

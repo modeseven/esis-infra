@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movie-ui
+  labels:
+    app: movie-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: movie-ui
+  template:
+    metadata:
+      labels:
+        app: movie-ui
+    spec:
+      containers:
+        - name: smx
+          image: modeseven/movietalk-ui:{{ .Values.uiImageTag }}
+          readinessProbe:
+            httpGet:
+              path: /home
+              port: 80
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 8
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /home
+              port: 80
+            initialDelaySeconds: 20
+            timeoutSeconds: 5
+            periodSeconds: 8
+            failureThreshold: 2
+          ports:
+            - containerPort: 80
+          env:
+          - name: KEYCLOAK_HOST
+            value: {{ .Values.tlsEnabled | ternary "https" "http" }}://{{ .Values.hostName }}
+          - name: REACT_APP_OMDB_API_KEY
+            value: {{ .Values.ombikey }}
+          - name: ENV
+            value: {{ .Values.env }}     
+          - name: VERSION
+            value: {{ .Values.uiImageTag }}
+          - name: API_VERSION
+            value: {{ .Values.apiImageTag }}                    
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: movie-ui
+spec:
+  selector:
+    app: movie-ui
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
