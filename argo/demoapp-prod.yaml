@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: movietalk-prod
+  name: esis-prod
   namespace: argocd
 spec:
   destination:
-    namespace: movietalk-prod
+    namespace: esis-prod
     server: 'https://kubernetes.default.svc'
   info:
     - name: test
@@ -15,8 +15,8 @@ spec:
     helm:
       valueFiles:
         - values.prod.yml
-    path: charts/movietalk
-    repoURL: 'git@github.com:modeseven/demoinfra.git'
+    path: charts/esis
+    repoURL: 'git@github.com:modeseven/esis-infra.git'
     targetRevision: HEAD
   syncPolicy:
     syncOptions:

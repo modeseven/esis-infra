@@ -1,6 +1,6 @@
 # env config
 env: test
-hostName: movietalk.test.mbegley.net
+hostName: esis.test.mbegley.net
 # Images
 uiImageTag: 220-main-a4862321
 apiImageTag: main-b7a09471

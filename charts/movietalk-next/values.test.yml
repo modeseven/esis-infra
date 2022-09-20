@@ -1,6 +1,0 @@
-# env config
-env: test
-hostName: movietalk-next.test.mbegley.net
-# Images
-uiImageTag: 6-main-c81e11ab
-apiImageTag: main-b7a09471

@@ -1,22 +1,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: movietalk-next-test
+  name: esis-e2e
   namespace: argocd
 spec:
   destination:
-    namespace: movietalk-next-test
+    namespace: esis-e2e
     server: 'https://kubernetes.default.svc'
   info:
     - name: test
       value: test
-  project: movietalk
+  project: demo
   source:
     helm:
       valueFiles:
-        - values.test.yml
-    path: charts/movietalk-next
-    repoURL: 'git@github.com:modeseven/demoinfra.git'
+        - values.e2e.yml
+    path: charts/esis
+    repoURL: 'git@github.com:modeseven/esis-infra.git'
     targetRevision: HEAD
   syncPolicy:
     syncOptions:
